@@ -40,8 +40,14 @@ class DrawingApp:
         self.brush_size = tk.IntVar()
         self.brush_size.set(1)
 
-        brush_size_label = tk.Label(control_frame, text="Размер кисти:")
-        brush_size_label.pack(side=tk.LEFT, padx=(5, 2))
+        self.brush_button = tk.Button(control_frame, text="Кисть", state=tk.NORMAL)
+        self.brush_button.pack(side=tk.LEFT)
+
+        self.eraser = tk.Button(control_frame, text='Ластик', state=tk.NORMAL, command=self.change_state_eraser)
+        self.eraser.pack(side=tk.LEFT)
+
+        self.brush_size_button = tk.Label(control_frame, text='Размер кисти:')
+        self.brush_size_button.pack(side=tk.LEFT)
 
         sizes = [1, 3, 5, 10]
 
@@ -59,19 +65,37 @@ class DrawingApp:
                                          command=self.update_size_brush)
         self.brush_size_scale.pack(side=tk.LEFT)
 
+
     def update_size_brush(self, value):
         self.brush_size.set(value)
 
-    def paint(self, event):
-        if self.last_x and self.last_y:
-            self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
-                                    width=self.brush_size_scale.get(), fill=self.pen_color,
-                                    capstyle=tk.ROUND, smooth=tk.TRUE)
-            self.draw.line([self.last_x, self.last_y, event.x, event.y], fill=self.pen_color,
-                           width=self.brush_size_scale.get())
+    def change_state_eraser(self) -> None:
+        if self.brush_button['state'] == tk.NORMAL:
+            self.brush_button['state'] = tk.DISABLED
+        else:
+            self.brush_button['state'] = tk.NORMAL
 
-        self.last_x = event.x
-        self.last_y = event.y
+    def paint(self, event):
+        if self.brush_button['state'] == tk.NORMAL:
+            if self.last_x and self.last_y:
+                self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
+                                        width=self.brush_size_scale.get(), fill=self.pen_color,
+                                        capstyle=tk.ROUND, smooth=tk.TRUE)
+                self.draw.line([self.last_x, self.last_y, event.x, event.y], fill=self.pen_color,
+                               width=self.brush_size_scale.get())
+
+            self.last_x = event.x
+            self.last_y = event.y
+        else:
+            if self.last_x and self.last_y:
+                self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
+                                        width=20, fill='white',
+                                        capstyle=tk.ROUND, smooth=tk.TRUE)
+                self.draw.line([self.last_x, self.last_y, event.x, event.y], fill='white',
+                               width=20)
+
+            self.last_x = event.x
+            self.last_y = event.y
 
     def reset(self, event):
         self.last_x, self.last_y = None, None
