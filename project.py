@@ -21,9 +21,9 @@ class DrawingApp:
 
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
+        self.canvas.bind('<Button-3>', self.pick_color)
 
-
-
+    # Метод, который отвечает за создание и расположение виджетов управления
     def setup_ui(self):
         control_frame = tk.Frame(self.root)
         control_frame.pack(fill=tk.X)
@@ -65,7 +65,7 @@ class DrawingApp:
                                          command=self.update_size_brush)
         self.brush_size_scale.pack(side=tk.LEFT)
 
-
+    # Метод, который обновляет размеры кисти из списка значений.
     def update_size_brush(self, value):
         self.brush_size.set(value)
 
@@ -75,6 +75,7 @@ class DrawingApp:
         else:
             self.brush_button['state'] = tk.NORMAL
 
+    # Функция рисует линии на холсте Tkinter и параллельно на объекте Image из Pillow
     def paint(self, event):
         if self.brush_button['state'] == tk.NORMAL:
             if self.last_x and self.last_y:
@@ -89,7 +90,7 @@ class DrawingApp:
         else:
             if self.last_x and self.last_y:
                 self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
-                                        width=20, fill='white',
+                                        width=self.brush_size_scale.get(), fill='white',
                                         capstyle=tk.ROUND, smooth=tk.TRUE)
                 self.draw.line([self.last_x, self.last_y, event.x, event.y], fill='white',
                                width=20)
@@ -97,17 +98,21 @@ class DrawingApp:
             self.last_x = event.x
             self.last_y = event.y
 
+    # Метод сбрасывает последние координаты кисти
     def reset(self, event):
         self.last_x, self.last_y = None, None
 
+    # Метод очищает холст, удаляя все нарисованное, и пересоздает объекты Image и ImageDraw для нового изображения.
     def clear_canvas(self):
         self.canvas.delete("all")
         self.image = Image.new("RGB", (600, 400), "white")
         self.draw = ImageDraw.Draw(self.image)
 
+    # Метод открывает стандартное диалоговое окно выбора цвета и устанавливает выбранный цвет как текущий для кисти
     def choose_color(self):
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 
+    # Метод позволяет пользователю сохранить изображение
     def save_image(self):
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
         if file_path:
@@ -119,6 +124,12 @@ class DrawingApp:
     def change_size(self):
         control_frame = tk.Frame(self.root)
         control_frame.pack(fill=tk.X)
+
+    # Метод, который получает цвет на холсте и устанавливает его в pen_color
+    def pick_color(self, event):
+        pipette = self.image.getpixel((event.x, event.y))
+        pipette = '#{:02x}{:02x}{:02x}'.format(pipette[0], pipette[1], pipette[2])
+        self.pen_color = pipette
 
 
 def main():
