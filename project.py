@@ -23,6 +23,9 @@ class DrawingApp:
         self.canvas.bind('<ButtonRelease-1>', self.reset)
         self.canvas.bind('<Button-3>', self.pick_color)
 
+        self.root.bind('<Control-s>', self.save_image)
+        self.root.bind('<Control-c>', self.choose_color)
+
     # Метод, который отвечает за создание и расположение виджетов управления
     def setup_ui(self):
         control_frame = tk.Frame(self.root)
@@ -109,11 +112,11 @@ class DrawingApp:
         self.draw = ImageDraw.Draw(self.image)
 
     # Метод открывает стандартное диалоговое окно выбора цвета и устанавливает выбранный цвет как текущий для кисти
-    def choose_color(self):
+    def choose_color(self, event):
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 
     # Метод позволяет пользователю сохранить изображение
-    def save_image(self):
+    def save_image(self, event):
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
         if file_path:
             if not file_path.endswith('.png'):
