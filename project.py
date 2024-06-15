@@ -8,10 +8,13 @@ class DrawingApp:
         self.root = root
         self.root.title("Рисовалка с сохранением в PNG")
 
-        self.image = Image.new("RGB", (600, 400), "white")
+        self.width = 600
+        self.height = 400
+
+        self.image = Image.new("RGB", (self.width, self.height), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-        self.canvas = tk.Canvas(root, width=600, height=400, bg='white')
+        self.canvas = tk.Canvas(self.root, width=self.width, height=self.height, bg='white')
         self.canvas.pack()
 
         self.setup_ui()
@@ -30,6 +33,9 @@ class DrawingApp:
     def setup_ui(self):
         control_frame = tk.Frame(self.root)
         control_frame.pack(fill=tk.X)
+
+        update_button = tk.Button(control_frame, text='Изменить размеры холста', command=self.update_canvas)
+        update_button.pack(side=tk.LEFT)
 
         clear_button = tk.Button(control_frame, text="Очистить", command=self.clear_canvas)
         clear_button.pack(side=tk.LEFT)
@@ -108,11 +114,11 @@ class DrawingApp:
     # Метод очищает холст, удаляя все нарисованное, и пересоздает объекты Image и ImageDraw для нового изображения.
     def clear_canvas(self):
         self.canvas.delete("all")
-        self.image = Image.new("RGB", (600, 400), "white")
+        self.image = Image.new("RGB", (self.width, self.height), "white")
         self.draw = ImageDraw.Draw(self.image)
 
     # Метод открывает стандартное диалоговое окно выбора цвета и устанавливает выбранный цвет как текущий для кисти
-    def choose_color(self, event):
+    def choose_color(self, event=None):
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 
     # Метод позволяет пользователю сохранить изображение
@@ -133,6 +139,36 @@ class DrawingApp:
         pipette = self.image.getpixel((event.x, event.y))
         pipette = '#{:02x}{:02x}{:02x}'.format(pipette[0], pipette[1], pipette[2])
         self.pen_color = pipette
+
+    # Метод, который позволяет изменить размеры холста
+    def update_canvas(self, event: tk.Event = None):
+
+        agree = simpledialog.askstring('Согласие на изменение',
+                                       prompt='Вы уверены? Текущий рисунок пропадет',
+                                       initialvalue='Да')
+
+        if agree == 'Да':
+
+            width = simpledialog.askinteger(f'Текущий размер холста: {self.width}X{self.height}',
+                                            prompt='Введите ширину',
+                                            minvalue=50,
+                                            maxvalue=1000,
+                                            initialvalue=self.width)
+
+            if width:
+                self.canvas.config(width=self.width, height=self.height)
+
+            height = simpledialog.askinteger(f'Текущий размер холста: {self.width}X{self.height}',
+                                             prompt='Введите высоту',
+                                             minvalue=50,
+                                             maxvalue=700,
+                                             initialvalue=self.height)
+
+            if height:
+                self.height = height
+            self.canvas.config(width=self.width, height=self.height)
+
+            self.clear_canvas()
 
 
 def main():
