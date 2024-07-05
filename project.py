@@ -24,7 +24,7 @@ class DrawingApp:
 
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
-        self.canvas.bind('<Button-3>', self.pick_color)
+        self.canvas.bind('<Button-3>', self.pipette_color)
 
         self.root.bind('<Control-s>', self.save_image)
         self.root.bind('<Control-c>', self.choose_color)
@@ -43,8 +43,17 @@ class DrawingApp:
         color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
 
+        color_label = tk.Button(control_frame, text='Предпросмотр цвета кисти', command=self.draw_label)
+        color_label.pack(side=tk.LEFT)
+
         save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
         save_button.pack(side=tk.LEFT)
+
+        text = tk.Button(control_frame, text='Добавление текста', command=self.add_text)
+        text.pack(side=tk.LEFT)
+
+        update_color_canvas = tk.Button(control_frame, text='Изменение цвета фона', command=self.update_canvas_color)
+        update_color_canvas.pack(side=tk.LEFT)
 
         self.brush_size = tk.IntVar()
         self.brush_size.set(1)
@@ -73,6 +82,30 @@ class DrawingApp:
                                          length=100,
                                          command=self.update_size_brush)
         self.brush_size_scale.pack(side=tk.LEFT)
+
+    # Метод, который позволяет добавить текст на изображение
+    def add_text(self):
+        text_w = simpledialog.askstring('Добавление текста', prompt='Введите текст')
+        text = f'{text_w}'
+
+        if text_w:
+            x = simpledialog.askinteger('Координата Х',
+                                        prompt='Введите координату Х',
+                                        minvalue=0,
+                                        maxvalue=self.width)
+
+            y = simpledialog.askinteger('Координата Y',
+                                        prompt='Введите координату Y',
+                                        minvalue=0,
+                                        maxvalue=self.height)
+
+            self.canvas.create_text(x, y, text=text, fill=self.pen_color)
+
+    # Метод, который позволяет сделать предпросмотр цвета кисти
+    def draw_label(self):
+        text_color = 'black' if self.pen_color == 'white' else 'white'
+        self.lbl = tk.Label(master=self.root, text='Цвет кисти', bg=self.pen_color, fg=text_color)
+        self.lbl.pack()
 
     # Метод, который обновляет размеры кисти из списка значений.
     def update_size_brush(self, value):
@@ -135,7 +168,7 @@ class DrawingApp:
         control_frame.pack(fill=tk.X)
 
     # Метод, который получает цвет на холсте и устанавливает его в pen_color
-    def pick_color(self, event):
+    def pipette_color(self, event):
         pipette = self.image.getpixel((event.x, event.y))
         pipette = '#{:02x}{:02x}{:02x}'.format(pipette[0], pipette[1], pipette[2])
         self.pen_color = pipette
@@ -152,10 +185,11 @@ class DrawingApp:
             width = simpledialog.askinteger(f'Текущий размер холста: {self.width}X{self.height}',
                                             prompt='Введите ширину',
                                             minvalue=50,
-                                            maxvalue=1000,
+                                            maxvalue=1200,
                                             initialvalue=self.width)
 
             if width:
+                self.width = width
                 self.canvas.config(width=self.width, height=self.height)
 
             height = simpledialog.askinteger(f'Текущий размер холста: {self.width}X{self.height}',
@@ -170,6 +204,18 @@ class DrawingApp:
 
             self.clear_canvas()
 
+    def update_canvas_color(self, event: tk.Event = None):
+        agree = simpledialog.askstring('Согласие на изменение',
+                                       prompt='Вы уверены? Текущий рисунок пропадет',
+                                       initialvalue='Да')
+
+        if agree == 'Да':
+            self.color_canvas = colorchooser.askcolor(color=self.pen_color)[1]
+
+            self.canvas.config(background=self.color_canvas)
+
+            self.clear_canvas()
+
 
 def main():
     root = tk.Tk()
@@ -179,3 +225,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
